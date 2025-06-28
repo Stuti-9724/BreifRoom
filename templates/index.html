@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Briefroom - Transform Conversations{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Hero Section -->
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold text-dark mb-3">Transform Conversations into Structured Briefs</h1>
+            <p class="lead text-muted">Upload audio recordings or paste text to generate professional project briefs and meeting summaries powered by AI.</p>
+        </div>
+
+        <!-- Content Type Selection -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-4">
+                    <i data-feather="upload" class="me-2"></i>
+                    Choose Content Type
+                </h5>
+                
+                <!-- Tab Navigation -->
+                <ul class="nav nav-pills mb-4" id="contentTypeTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="audio-tab" data-bs-toggle="pill" data-bs-target="#audio-panel" type="button" role="tab">
+                            <i data-feather="mic" class="me-2"></i>
+                            Audio Recording
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="text-tab" data-bs-toggle="pill" data-bs-target="#text-panel" type="button" role="tab">
+                            <i data-feather="type" class="me-2"></i>
+                            Text Input
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="contentTypeTabsContent">
+                    <!-- Audio Upload Panel -->
+                    <div class="tab-pane fade show active" id="audio-panel" role="tabpanel">
+                        <form action="{{ url_for('process_content') }}" method="post" enctype="multipart/form-data" id="audioForm">
+                            <input type="hidden" name="content_type" value="audio">
+                            
+                            <!-- File Upload Area -->
+                            <div class="upload-area mb-4" id="uploadArea">
+                                <div class="upload-placeholder">
+                                    <i data-feather="upload-cloud" size="48" class="text-muted mb-3"></i>
+                                    <h6 class="mb-2">Drop audio file here or click to browse</h6>
+                                    <small class="text-muted">Supports MP3 and WAV files up to 50MB</small>
+                                    <input type="file" name="audio_file" id="audioFile" accept=".mp3,.wav" class="d-none">
+                                </div>
+                                <div class="upload-preview d-none" id="uploadPreview">
+                                    <div class="d-flex align-items-center">
+                                        <i data-feather="file-audio" class="me-3 text-primary"></i>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-medium" id="fileName"></div>
+                                            <small class="text-muted" id="fileSize"></small>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" id="removeFile">
+                                            <i data-feather="x"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Classification Override -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i data-feather="tag" class="me-2"></i>
+                                    Classification Override (Optional)
+                                </label>
+                                <select name="manual_classification" class="form-select">
+                                    <option value="">Auto-detect content type</option>
+                                    <option value="client">Client Conversation</option>
+                                    <option value="internal">Internal Meeting</option>
+                                </select>
+                                <div class="form-text">Leave on auto-detect to let AI classify your content automatically.</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100" disabled id="audioSubmit">
+                                <i data-feather="play-circle" class="me-2"></i>
+                                Process Audio Recording
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Text Input Panel -->
+                    <div class="tab-pane fade" id="text-panel" role="tabpanel">
+                        <form action="{{ url_for('process_content') }}" method="post" id="textForm">
+                            <input type="hidden" name="content_type" value="text">
+                            
+                            <!-- Text Input Area -->
+                            <div class="mb-4">
+                                <label for="textContent" class="form-label">
+                                    <i data-feather="edit-3" class="me-2"></i>
+                                    Paste Your Content
+                                </label>
+                                <textarea name="text_content" id="textContent" class="form-control" rows="10" 
+                                         placeholder="Paste your meeting transcript, email, chat conversation, or any text content here..."></textarea>
+                                <div class="form-text">
+                                    <span id="charCount">0</span> characters entered
+                                </div>
+                            </div>
+
+                            <!-- Classification Override -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i data-feather="tag" class="me-2"></i>
+                                    Classification Override (Optional)
+                                </label>
+                                <select name="manual_classification" class="form-select">
+                                    <option value="">Auto-detect content type</option>
+                                    <option value="client">Client Conversation</option>
+                                    <option value="internal">Internal Meeting</option>
+                                </select>
+                                <div class="form-text">Leave on auto-detect to let AI classify your content automatically.</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100" disabled id="textSubmit">
+                                <i data-feather="zap" class="me-2"></i>
+                                Analyze Text Content
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="row g-4 mt-4">
+            <div class="col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-feather="users" class="text-primary"></i>
+                    </div>
+                    <h6 class="fw-bold">Client Conversations</h6>
+                    <small class="text-muted">Generate project briefs with goals, deliverables, timeline, budget, and follow-up emails.</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-feather="layers" class="text-primary"></i>
+                    </div>
+                    <h6 class="fw-bold">Internal Meetings</h6>
+                    <small class="text-muted">Create summaries with decisions, key points, unresolved questions, and action items.</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-feather="check-circle" class="text-primary"></i>
+                    </div>
+                    <h6 class="fw-bold">Scope Checker</h6>
+                    <small class="text-muted">Automatically flags vague or missing information that needs clarification.</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-feather="download" class="text-primary"></i>
+                    </div>
+                    <h6 class="fw-bold">Export Options</h6>
+                    <small class="text-muted">Copy to clipboard or export as PDF for easy sharing and documentation.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Processing Modal -->
+<div class="modal fade" id="processingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h6 class="mb-2">Processing Your Content</h6>
+                <p class="text-muted mb-0" id="processingStatus">Initializing...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

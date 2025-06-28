@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Results - Briefroom{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">{{ analysis.title or 'Analysis Results' }}</h2>
+                <div class="text-muted">
+                    <small>
+                        <i data-feather="calendar" class="me-1"></i>
+                        {{ session.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                        <span class="mx-2">•</span>
+                        <i data-feather="tag" class="me-1"></i>
+                        {{ session.classification.title() }} {{ session.content_type.title() }}
+                    </small>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-primary" onclick="copyToClipboard({{ session.id }})">
+                    <i data-feather="copy" class="me-2"></i>
+                    Copy
+                </button>
+                <a href="{{ url_for('export_pdf', session_id=session.id) }}" class="btn btn-outline-primary">
+                    <i data-feather="download" class="me-2"></i>
+                    PDF
+                </a>
+            </div>
+        </div>
+
+        <!-- Scope Flags (if any) -->
+        {% if analysis.scope_flags %}
+        <div class="alert alert-warning mb-4">
+            <div class="d-flex align-items-start">
+                <i data-feather="alert-triangle" class="me-2 mt-1 flex-shrink-0"></i>
+                <div>
+                    <h6 class="alert-heading mb-2">Scope Checker Flags</h6>
+                    <ul class="mb-0">
+                        {% for flag in analysis.scope_flags %}
+                        <li>{{ flag }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Results Content -->
+        <div class="row g-4">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                {% if session.classification == 'client' %}
+                    <!-- Client Conversation Results -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i data-feather="users" class="me-2"></i>
+                                Project Brief
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="result-section">
+                                        <h6 class="text-primary mb-2">
+                                            <i data-feather="target" class="me-2"></i>
+                                            Goals
+                                        </h6>
+                                        <div class="result-content">
+                                            {{ analysis.goals or 'Not specified' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="result-section">
+                                        <h6 class="text-primary mb-2">
+                                            <i data-feather="package" class="me-2"></i>
+                                            Deliverables
+                                        </h6>
+                                        <div class="result-content">
+                                            {{ analysis.deliverables or 'Not specified' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="result-section">
+                                        <h6 class="text-primary mb-2">
+                                            <i data-feather="clock" class="me-2"></i>
+                                            Timeline
+                                        </h6>
+                                        <div class="result-content">
+                                            {{ analysis.timeline or 'Not specified' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="result-section">
+                                        <h6 class="text-primary mb-2">
+                                            <i data-feather="dollar-sign" class="me-2"></i>
+                                            Budget
+                                        </h6>
+                                        <div class="result-content">
+                                            {{ analysis.budget or 'Not specified' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="result-section">
+                                        <h6 class="text-primary mb-2">
+                                            <i data-feather="message-circle" class="me-2"></i>
+                                            Tone & Relationship
+                                        </h6>
+                                        <div class="result-content">
+                                            {{ analysis.tone or 'Not specified' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Follow-up Email -->
+                    {% if analysis.follow_up_email %}
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i data-feather="mail" class="me-2"></i>
+                                Follow-up Email Draft
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="email-content">
+                                {{ analysis.follow_up_email|replace('\n', '<br>')|safe }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                {% else %}
+                    <!-- Internal Meeting Results -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i data-feather="layers" class="me-2"></i>
+                                Meeting Summary
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="result-section">
+                                        <h6 class="text-success mb-2">
+                                            <i data-feather="check-circle" class="me-2"></i>
+                                            Key Decisions
+                                        </h6>
+                                        <div class="result-content">
+                                            {{ analysis.decisions or 'None recorded' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="result-section">
+                                        <h6 class="text-success mb-2">
+                                            <i data-feather="star" class="me-2"></i>
+                                            Key Points
+                                        </h6>
+                                        <div class="result-content">
+                                            {{ analysis.key_points or 'None recorded' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="result-section">
+                                        <h6 class="text-warning mb-2">
+                                            <i data-feather="help-circle" class="me-2"></i>
+                                            Unresolved Questions
+                                        </h6>
+                                        <div class="result-content">
+                                            {{ analysis.unresolved_questions or 'None recorded' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="result-section">
+                                        <h6 class="text-info mb-2">
+                                            <i data-feather="list" class="me-2"></i>
+                                            Action Items
+                                        </h6>
+                                        <div class="result-content">
+                                            {{ analysis.action_items or 'None recorded' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Session Info -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i data-feather="info" class="me-2"></i>
+                            Session Details
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <small class="text-muted">Content Type</small>
+                            <div class="fw-medium">{{ session.content_type.title() }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Classification</small>
+                            <div class="fw-medium">{{ session.classification.title() }}</div>
+                        </div>
+                        {% if session.filename %}
+                        <div class="mb-3">
+                            <small class="text-muted">Source File</small>
+                            <div class="fw-medium">{{ session.filename }}</div>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <small class="text-muted">Processed</small>
+                            <div class="fw-medium">{{ session.created_at.strftime('%B %d, %Y') }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i data-feather="settings" class="me-2"></i>
+                            Actions
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" onclick="copyToClipboard({{ session.id }})">
+                                <i data-feather="copy" class="me-2"></i>
+                                Copy to Clipboard
+                            </button>
+                            <a href="{{ url_for('export_pdf', session_id=session.id) }}" class="btn btn-outline-primary">
+                                <i data-feather="download" class="me-2"></i>
+                                Export as PDF
+                            </a>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                <i data-feather="plus-circle" class="me-2"></i>
+                                New Analysis
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Original Transcript -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i data-feather="file-text" class="me-2"></i>
+                    Original Transcript
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="transcript-content">
+                    {{ session.transcribed_text or 'No transcript available' }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Copy Success Toast -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="copyToast" class="toast" role="alert">
+        <div class="toast-header">
+            <i data-feather="check-circle" class="text-success me-2"></i>
+            <strong class="me-auto">Success</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            Content copied to clipboard!
+        </div>
+    </div>
+</div>
+{% endblock %}
